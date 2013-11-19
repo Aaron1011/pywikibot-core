@@ -6,7 +6,7 @@
 #
 __version__ = '$Id$'
 
-import transliteration
+from . import transliteration
 import traceback
 import re
 import sys
@@ -14,6 +14,7 @@ import pywikibot as wikipedia
 from pywikibot import config
 from pywikibot.bot import DEBUG, VERBOSE, INFO, STDOUT, INPUT, WARNING
 import logging
+import six
 
 transliterator = transliteration.transliterator(config.console_encoding)
 
@@ -237,8 +238,8 @@ class UI:
         """
         try:
             import gui
-        except ImportError, e:
-            print 'Could not load GUI modules: %s' % e
+        except ImportError as e:
+            print('Could not load GUI modules: %s' % e)
             return text
         editor = gui.EditBoxWindow()
         return editor.edit(text, jumpIndex=jumpIndex, highlight=highlight)
@@ -264,7 +265,10 @@ class UI:
                 u'What is the solution of the CAPTCHA at this url ?')
 
     def argvu(self):
-        return [s.decode(self.encoding) for s in self.argv]
+        if six.PY3:
+            return [six.binary_type(s, self.encoding).decode(self.encoding) for s in self.argv]
+        else:
+            return [six.binary_type(s).decode(self.encoding) for s in self.argv]
 
 
 class TerminalHandler(logging.Handler):

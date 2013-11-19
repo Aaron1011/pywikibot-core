@@ -17,7 +17,9 @@ import math
 import re
 import sys
 import threading
-from Queue import Queue
+import six
+from six.moves import queue
+Queue = queue.Queue
 
 # Use pywikibot. prefix for all in-package imports; this is to prevent
 # confusion with similarly-named modules in version 1 framework, for users
@@ -310,8 +312,8 @@ def Site(code=None, fam=None, user=None, sysop=None, interface=None):
 getSite = Site  # alias for backwards-compability
 
 
-from page import Page, ImagePage, Category, Link, User, ItemPage, PropertyPage, Claim
-from page import html2unicode, url2unicode
+from .page import Page, ImagePage, Category, Link, User, ItemPage, PropertyPage, Claim
+from .page import html2unicode, url2unicode
 
 
 link_regex = re.compile(r'\[\[(?P<title>[^\]|[<>{}]*)(\|.*?)?\]\]')
@@ -431,7 +433,7 @@ Really exit?""" % remaining(),
 
     # only need one drop() call because all throttles use the same global pid
     try:
-        _sites.values()[0].throttle.drop()
+        list(_sites.values())[0].throttle.drop()
         pywikibot.log(u"Dropped throttle(s).")
     except IndexError:
         pass

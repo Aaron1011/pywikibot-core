@@ -25,7 +25,7 @@ import codecs
 import itertools
 import pywikibot
 import time
-import date
+from . import date
 from pywikibot import config
 from pywikibot import deprecate_arg, i18n
 
@@ -1223,7 +1223,7 @@ def MySQLPageGenerator(query, site=None):
     while True:
         try:
             namespaceNumber, pageName = cursor.fetchone()
-            print namespaceNumber, pageName
+            print(namespaceNumber, pageName)
         except TypeError:
             # Limit reached or no more results
             break

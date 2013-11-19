@@ -304,7 +304,7 @@ class Page(object):
                 or self._revisions[self._revid].text is None:
             try:
                 self.site.loadrevisions(self, getText=True, sysop=sysop)
-            except (pywikibot.NoPage, pywikibot.SectionError), e:
+            except (pywikibot.NoPage, pywikibot.SectionError) as e:
                 self._getexception = e
                 raise
 
@@ -830,13 +830,13 @@ class Page(object):
                 raise pywikibot.PageNotSaved(link)
             else:
                 pywikibot.output(u"Page %s saved" % link)
-        except pywikibot.LockedPage, err:
+        except pywikibot.LockedPage as err:
             # re-raise the LockedPage exception so that calling program
             # can re-try if appropriate
             if not callback and not async:
                 raise
         # TODO: other "expected" error types to catch?
-        except pywikibot.Error, err:
+        except pywikibot.Error as err:
             pywikibot.log(u"Error saving page %s (%s)\n" % (link, err),
                           exc_info=True)
             if not callback and not async:
@@ -853,12 +853,12 @@ class Page(object):
         if config.cosmetic_changes_mylang_only:
             cc = ((family == config.family and
                    self.site.lang == config.mylang) or
-                  family in config.cosmetic_changes_enable.keys() and
+                  family in list(config.cosmetic_changes_enable.keys()) and
                   self.site.lang in config.cosmetic_changes_enable[family])
         else:
             cc = True
         cc = (cc and not
-              (family in config.cosmetic_changes_disable.keys() and
+              (family in list(config.cosmetic_changes_disable.keys()) and
                self.site.lang in config.cosmetic_changes_disable[family]))
         if not cc:
             return
@@ -1286,7 +1286,7 @@ class Page(object):
         if answer in ['y', 'Y']:
             try:
                 return self.site.deletepage(self, reason)
-            except pywikibot.NoUsername, e:
+            except pywikibot.NoUsername as e:
                 if mark:
                     raise NotImplementedError(
                         "Marking pages for deletion is not yet available.")
@@ -1477,7 +1477,7 @@ class Page(object):
             except pywikibot.EditConflict:
                 pywikibot.output(u'Skipping %s because of edit conflict'
                                  % self.title())
-            except pywikibot.SpamfilterError, e:
+            except pywikibot.SpamfilterError as e:
                 pywikibot.output(u'Skipping %s because of blacklist entry %s'
                                  % (self.title(), e.url))
             except pywikibot.LockedPage:
@@ -1486,7 +1486,7 @@ class Page(object):
             except pywikibot.NoUsername:
                 pywikibot.output(u'Page %s not saved; sysop privileges '
                                  u'required.' % self.title(asLink=True))
-            except pywikibot.PageNotSaved, error:
+            except pywikibot.PageNotSaved as error:
                 pywikibot.output(u'Saving page %s failed: %s'
                                  % (self.title(asLink=True), error.message))
 
@@ -2231,7 +2231,7 @@ class User(Page):
         try:
             self.site.blockuser(self, expiry, reason, anononly, nocreate,
                                 autoblock, noemail, reblock)
-        except pywikibot.data.api.APIError, err:
+        except pywikibot.data.api.APIError as err:
             if err.code == 'invalidrange':
                 raise ValueError("%s is not a valid IP range." % self.username)
             else:
@@ -2386,7 +2386,7 @@ class WikibasePage(Page):
         """
         if force or not hasattr(self, '_content'):
             data = self.repo.loadcontent(self._defined_by(), *args)
-            self.id = data.keys()[0]
+            self.id = list(data.keys())[0]
             self._content = data[self.id]
         if 'lastrevid' in self._content:
             self.lastrevid = self._content['lastrevid']
@@ -2511,7 +2511,7 @@ class WikibasePage(Page):
         value should be a list of strings.
         """
         aliases = self.__normalizeLanguages(aliases)
-        for (key, strings) in aliases.items():
+        for (key, strings) in list(aliases.items()):
             aliases[key] = [{'language': key, 'value': i} for i in strings]
         data = {'aliases': aliases}
         self.editEntity(data, **kwargs)
@@ -2826,7 +2826,7 @@ class Claim(PropertyPage):
         more handling.
         """
         source = collections.defaultdict(list)
-        for prop in data['snaks'].values():
+        for prop in list(data['snaks'].values()):
             for claimsnak in prop:
                 claim = Claim.fromJSON(site, {'mainsnak': claimsnak,
                                               'hash': data['hash']})
@@ -3018,7 +3018,7 @@ class Link(object):
     """
     illegal_titles_pattern = re.compile(
         # Matching titles will be held as illegal.
-        ur'''[\x00-\x1f\x23\x3c\x3e\x5b\x5d\x7b\x7c\x7d\x7f]'''
+        r'''[\x00-\x1f\x23\x3c\x3e\x5b\x5d\x7b\x7c\x7d\x7f]'''
         # URL percent encoding sequences interfere with the ability
         # to round-trip titles -- you can't link to them consistently.
         u'|%[0-9A-Fa-f]{2}'
@@ -3157,7 +3157,7 @@ class Link(object):
                 t = t[t.index(u":"):].lstrip(u":").lstrip(u" ")
                 self._namespace = ns
                 break
-            if prefix in fam.langs.keys()\
+            if prefix in list(fam.langs.keys())\
                     or prefix in fam.get_known_families(site=self._site):
                 # looks like an interwiki link
                 if not firstPass:
@@ -3166,7 +3166,7 @@ class Link(object):
                         "Improperly formatted interwiki link '%s'"
                         % self._text)
                 t = t[t.index(u":"):].lstrip(u":").lstrip(u" ")
-                if prefix in fam.langs.keys():
+                if prefix in list(fam.langs.keys()):
                     newsite = pywikibot.Site(prefix, fam)
                 else:
                     otherlang = self._site.code
@@ -3483,7 +3483,7 @@ def url2unicode(title, site, site2=None):
             t = title.encode(enc)
             t = urllib.unquote(t)
             return unicode(t, enc)
-        except UnicodeError, ex:
+        except UnicodeError as ex:
             if not firstException:
                 firstException = ex
             pass

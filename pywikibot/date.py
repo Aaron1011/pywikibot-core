@@ -18,6 +18,8 @@ __version__ = '$Id$'
 #
 
 import re
+from six.moves import xrange
+import six
 
 #
 # Different collections of well known formats
@@ -50,7 +52,7 @@ def multi(value, tuplst):
     When the 2nd function evaluates to true, the 1st function is used.
 
     """
-    if isinstance(value, basestring):
+    if isinstance(value, six.string_types[0]):
         # Try all functions, and test result against predicates
         for func, pred in tuplst:
             try:
@@ -186,7 +188,7 @@ def slh(value, lst):
             formats['MonthName']['en'](u'anything else') => raise ValueError
 
     """
-    if isinstance(value, basestring):
+    if isinstance(value, six.string_types[0]):
         return lst.index(value) + 1
     else:
         return lst[value - 1]
@@ -203,7 +205,7 @@ def dh_constVal(value, ind, match):
     formats['CurrEvents']['en'](u'Current Events') => ind
 
     """
-    if isinstance(value, basestring):
+    if isinstance(value, six.string_types[0]):
         if value == match:
             return ind
         else:
@@ -229,33 +231,33 @@ def monthName(lang, ind):
 
 # Helper for KN: digits representation
 _knDigits = u'೦೧೨೩೪೫೬೭೮೯'
-_knDigitsToLocal = dict([(ord(unicode(i)), _knDigits[i]) for i in xrange(10)])
-_knLocalToDigits = dict([(ord(_knDigits[i]), unicode(i)) for i in xrange(10)])
+_knDigitsToLocal = dict([(ord(six.text_type(i)), _knDigits[i]) for i in xrange(10)])
+_knLocalToDigits = dict([(ord(_knDigits[i]), six.text_type(i)) for i in xrange(10)])
 
 # Helper for Urdu/Persian languages
 _faDigits = u'۰۱۲۳۴۵۶۷۸۹'
-_faDigitsToLocal = dict([(ord(unicode(i)), _faDigits[i]) for i in xrange(10)])
-_faLocalToDigits = dict([(ord(_faDigits[i]), unicode(i)) for i in xrange(10)])
+_faDigitsToLocal = dict([(ord(six.text_type(i)), _faDigits[i]) for i in xrange(10)])
+_faLocalToDigits = dict([(ord(_faDigits[i]), six.text_type(i)) for i in xrange(10)])
 
 # Helper for HI:, MR:
 _hiDigits = u'०१२३४५६७८९'
-_hiDigitsToLocal = dict([(ord(unicode(i)), _hiDigits[i]) for i in xrange(10)])
-_hiLocalToDigits = dict([(ord(_hiDigits[i]), unicode(i)) for i in xrange(10)])
+_hiDigitsToLocal = dict([(ord(six.text_type(i)), _hiDigits[i]) for i in xrange(10)])
+_hiLocalToDigits = dict([(ord(_hiDigits[i]), six.text_type(i)) for i in xrange(10)])
 
 # Helper for BN:
 _bnDigits = u'০১২৩৪৫৬৭৮৯'
-_bnDigitsToLocal = dict([(ord(unicode(i)), _bnDigits[i]) for i in xrange(10)])
-_bnLocalToDigits = dict([(ord(_bnDigits[i]), unicode(i)) for i in xrange(10)])
+_bnDigitsToLocal = dict([(ord(six.text_type(i)), _bnDigits[i]) for i in xrange(10)])
+_bnLocalToDigits = dict([(ord(_bnDigits[i]), six.text_type(i)) for i in xrange(10)])
 
 # Helper for GU:
 _guDigits = u'૦૧૨૩૪૫૬૭૮૯'
-_guDigitsToLocal = dict([(ord(unicode(i)), _guDigits[i]) for i in xrange(10)])
-_guLocalToDigits = dict([(ord(_guDigits[i]), unicode(i)) for i in xrange(10)])
+_guDigitsToLocal = dict([(ord(six.text_type(i)), _guDigits[i]) for i in xrange(10)])
+_guLocalToDigits = dict([(ord(_guDigits[i]), six.text_type(i)) for i in xrange(10)])
 
 
 def intToLocalDigitsStr(value, digitsToLocalDict):
     # Encode an integer value into a textual form.
-    return unicode(value).translate(digitsToLocalDict)
+    return six.text_type(value).translate(digitsToLocalDict)
 
 
 def localDigitsStrToInt(value, digitsToLocalDict, localToDigitsDict):
@@ -291,7 +293,7 @@ _digitDecoders = {
     # %% is a %
     '%': u'%',
     # %d is a decimal
-    'd': (_decimalDigits, unicode, int),
+    'd': (_decimalDigits, six.text_type, int),
     # %R is a roman numeral. This allows for only the simpliest linear
     # conversions based on a list of numbers
     'R': (u'IVX', intToRomanNum, romanNumToInt),
@@ -311,7 +313,7 @@ _digitDecoders = {
     'G': (_guDigits, lambda v: intToLocalDigitsStr(v, _guDigitsToLocal),
           lambda v: localDigitsStrToInt(v, _guDigitsToLocal, _guLocalToDigits)),
     # %T is a year in TH: -- all years are shifted: 2005 => 'พ.ศ. 2548'
-    'T': (_decimalDigits, lambda v: unicode(v+543), lambda v: int(v)-543),
+    'T': (_decimalDigits, lambda v: six.text_type(v+543), lambda v: int(v)-543),
 }
 
 # Allows to search for '(%%)|(%d)|(%R)|...", and allows one digit 1-9 to set
@@ -345,7 +347,7 @@ def escapePattern2(pattern):
                   (len(s) == 2 or s[1] in _decimalDigits)):
                 # Must match a "%2d" or "%d" style
                 dec = _digitDecoders[s[-1]]
-                if isinstance(dec, basestring):
+                if isinstance(dec, six.string_types[0]):
                     # Special case for strings that are replaced instead of
                     # decoded
                     if len(s) == 3:
@@ -405,7 +407,7 @@ def dh(value, pattern, encf, decf, filter=None):
     """
 
     compPattern, strPattern, decoders = escapePattern2(pattern)
-    if isinstance(value, basestring):
+    if isinstance(value, six.string_types[0]):
         m = compPattern.match(value)
         if m:
             # decode each found value using provided decoder
@@ -413,7 +415,7 @@ def dh(value, pattern, encf, decf, filter=None):
                       for i in xrange(len(decoders))]
             decValue = decf(values)
 
-            if isinstance(decValue, basestring):
+            if isinstance(decValue, six.string_types[0]):
                 raise AssertionError("Decoder must not return a string!")
 
             # recursive call to re-encode and see if we get the original
@@ -421,6 +423,8 @@ def dh(value, pattern, encf, decf, filter=None):
             if value == dh(decValue, pattern, encf, decf, filter):
                 return decValue
 
+        print("Value: ", value)
+        print("Regexp: ", compPattern)
         raise ValueError("reverse encoding didn't match")
     else:
         # Encode an integer value into a textual form.
@@ -2282,7 +2286,7 @@ def getAutoFormat(lang, title, ignoreFirstLetterCase=True):
     dictName is 'YearBC', 'December', etc.
 
     """
-    for dictName, dict in formats.iteritems():
+    for dictName, dict in formats.items():
         try:
             year = dict[lang](title)
             return dictName, year
@@ -2352,7 +2356,7 @@ def testMapEntry(formatName, showAll=True, value=None):
         print(u"Processing %s with limits from %d to %d and step %d"
               % (formatName, start, stop - 1, step))
 
-    for code, convFunc in formats[formatName].iteritems():
+    for code, convFunc in formats[formatName].items():
 ##        import time
 ##        startClock = time.clock()
         for value in xrange(start, stop, step):
